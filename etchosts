@@ -1,0 +1,156 @@
+#!/usr/bin/env php
+<?php
+if ($argc == 1) {
+    do_list();
+} elseif ($argv[1] == 'help' || $argv[1] == '-h') {
+    do_help();
+} elseif ($argv[1] == 'add') {
+    if ($argc != 4) {
+        do_error('hosts remove expects exactly two parameters.'."\n\n".'       hosts add <host> <ip>'."\n");
+    }
+    do_add($argv[2], $argv[3]);
+} elseif ($argv[1] == 'remove') {
+    if ($argc != 3) {
+        do_error('hosts remove expects exactly one parameter.'."\n\n".'       hosts remove <host>'."\n");
+    }
+    do_remove($argv[2]);
+} else {
+    do_error('Unknown command \''.$argv[1].'\'');
+}
+exit(0);
+
+function do_help()
+{
+    echo sprintf("Usage: hosts list\n");
+    echo sprintf("       hosts add <host> <ip>\n");
+    echo sprintf("       hosts remove <host>\n");
+}
+
+
+function do_list()
+{
+    $data = file_get_contents('/etc/hosts');
+    $lines = explode("\n", $data);
+
+    $i = 1;
+    foreach ($lines as $line) {
+        echo sprintf("\033[30m %02d. \033[0m", $i);
+        if (substr($line, 0, 1) != '#') {
+            echo sprintf("%s\n", $line);
+        } else {
+            echo sprintf("\033[37m%s\033[0m\n", $line);
+        }
+        $i++;
+    }
+}
+
+function do_error($msg)
+{
+    echo 'Error: '.$msg."\n";
+    exit(1);
+}
+
+function do_remove($host)
+{
+    $regex = regex($host);
+
+    $found = false;
+    $new = [];
+    foreach (parse() as $data) {
+        if ($data['host'] && preg_match($regex, $data['host']) > 0) {
+            $found = true;
+        } else {
+            $new[] = $data;
+        }
+    }
+
+    if (!$found) {
+        do_error('Host '.$host.' not found.');
+    }
+
+    save($new);
+}
+
+function do_add($host, $ip)
+{
+    $found = false;
+    $new = [];
+    foreach (parse() as $data) {
+        if ($data['host'] && $data['host'] == $host) {
+            $found = true;
+        } else {
+            $new[] = $data;
+        }
+    }
+
+    if ($found) {
+        do_error('Host '.$host.' already exists!');
+    }
+
+    $sp = str_repeat(' ', (4 * floor((strlen($ip) + 8) / 4)) - strlen($ip));
+    $new[] = [
+        'ip' => $ip,
+        'host' => $host,
+        'original' => $ip.$sp.$host,
+    ];
+
+    save($new);
+}
+
+function parse() {
+    $data = file_get_contents('/etc/hosts');
+    $lines = explode("\n", $data);
+
+    $ret = [];
+    $i = 1;
+    foreach ($lines as $line) {
+        $original = $line;
+        $line = preg_replace('~#.*$~', '', $line);
+        $line = trim($line);
+
+        $ip = null;
+        $host = null;
+        if ($line) {
+            list($ip, $host) = preg_split('~\s+~', $line);            
+        }
+
+        $ret[] = [
+            'line' => $i,
+            'ip' => $ip,
+            'host' => $host,
+            'original' => $original,
+        ];
+
+        $i++;
+    }
+
+    return $ret;
+}
+
+function save($data)
+{
+    if (!is_writable('/etc/hosts')) {
+        do_error('File /etc/hosts is not writable. Maybe you should run the command with sudo.');
+    }
+
+    $content = [];
+    foreach ($data as $d) {
+        $content[] = $d['original'];
+    }
+    $content = implode("\n", $content)."\n";
+
+    print_r($content);
+
+    file_put_contents('/etc/hosts', $content);
+}
+
+function regex($host)
+{
+    $regex = preg_replace('~\.~', '[.]', $host);
+    $regex = preg_replace('~\*~', '[^.]*', $regex);
+    $regex = '^'.$regex.'$';
+    $regex = preg_replace('~#~', '\\#', $regex);
+    $regex = '#'.$regex.'#';
+
+    return $regex;
+}
