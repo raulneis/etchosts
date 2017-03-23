@@ -40,6 +40,7 @@ It will prompt a list like:
  03. # The following lines are desirable for IPv6 capable hosts
  04. ::1     ip6-localhost ip6-loopback
  05. fe00::0 ip6-localnet
+ ...
 ```
 Note that this command does not need root access, so `sudo` is not needed.
 
