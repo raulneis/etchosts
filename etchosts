@@ -52,7 +52,7 @@ function do_list()
 
     $i = 1;
     foreach ($lines as $line) {
-        echo sprintf("\033[30m %02d. \033[0m", $i);
+        echo sprintf("\033[37m %02d. \033[0m", $i);
         if (substr($line, 0, 1) != '#') {
             echo sprintf("%s\n", $line);
         } else {
