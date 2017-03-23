@@ -1,29 +1,47 @@
 #!/usr/bin/env php
 <?php
+
 if ($argc == 1) {
     do_list();
 } elseif ($argv[1] == 'help' || $argv[1] == '-h') {
     do_help();
+
 } elseif ($argv[1] == 'add') {
     if ($argc != 4) {
-        do_error('hosts remove expects exactly two parameters.'."\n\n".'       hosts add <host> <ip>'."\n");
+        do_error('etchosts add expects exactly two parameters.'."\n\n".'       etchosts add <host> <ip>'."\n");
     }
-    do_add($argv[2], $argv[3]);
-} elseif ($argv[1] == 'remove') {
+    $host = $argv[2];
+    $ip = $argv[3];
+    if (!validateHost($host)) {
+        do_error('Host is not valid.');
+    }
+    if (!validateIp($ip)) {
+        do_error('Ip is not valid.');
+    }
+    do_add($host, $ip);
+
+} elseif ($argv[1] == 'rm' || $argv[1] == 'remove') {
     if ($argc != 3) {
-        do_error('hosts remove expects exactly one parameter.'."\n\n".'       hosts remove <host>'."\n");
+        do_error('etchosts rm expects exactly one parameter.'."\n\n".'       etchosts [rm|remove] <host>'."\n");
     }
-    do_remove($argv[2]);
+    $host = $argv[2];
+    if (!validateHost($host)) {
+        do_error('Host is not valid.');
+    }
+    do_remove($host);
+
 } else {
-    do_error('Unknown command \''.$argv[1].'\'');
+    do_error('unknown command \''.$argv[1].'\'');
+
 }
 exit(0);
 
 function do_help()
 {
-    echo sprintf("Usage: hosts list\n");
-    echo sprintf("       hosts add <host> <ip>\n");
-    echo sprintf("       hosts remove <host>\n");
+    echo sprintf("Usage: etchosts -- lists current hosts\n");
+    echo sprintf("       etchosts [help|-h] -- shows this help\n");
+    echo sprintf("       etchosts add <host> <ip> -- adds the host with the associated ip\n");
+    echo sprintf("       etchosts [rm|remove] <host> -- removes the host\n");
 }
 
 
@@ -65,7 +83,7 @@ function do_remove($host)
     }
 
     if (!$found) {
-        do_error('Host '.$host.' not found.');
+        do_error('host '.$host.' not found.');
     }
 
     save($new);
@@ -84,7 +102,7 @@ function do_add($host, $ip)
     }
 
     if ($found) {
-        do_error('Host '.$host.' already exists!');
+        do_error('host '.$host.' already exists!');
     }
 
     $sp = str_repeat(' ', (4 * floor((strlen($ip) + 8) / 4)) - strlen($ip));
@@ -130,7 +148,7 @@ function parse() {
 function save($data)
 {
     if (!is_writable('/etc/hosts')) {
-        do_error('File /etc/hosts is not writable. Maybe you should run the command with sudo.');
+        do_error('file /etc/hosts is not writable. Maybe you should run etchosts with sudo.');
     }
 
     $content = [];
@@ -153,4 +171,14 @@ function regex($host)
     $regex = '#'.$regex.'#';
 
     return $regex;
+}
+
+function validateIp($ip)
+{
+    return ! (filter_var($ip, FILTER_VALIDATE_IP) === false);
+}
+
+function validateHost($host)
+{
+    return preg_match('#^([a-zA-Z0-9_-]+)([.]([a-zA-Z0-9_-]+))*[.]?$#', $host) != 0;
 }
