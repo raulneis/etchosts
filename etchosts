@@ -1,14 +1,23 @@
 #!/usr/bin/env php
 <?php
 
+define ('ETC_HOSTS', '/etc/hosts');
+
 if ($argc == 1) {
-    do_list();
+    do_help();
+
 } elseif ($argv[1] == 'help' || $argv[1] == '-h') {
     do_help();
 
+} elseif ($argv[1] == 'list') {
+    do_list();
+
+} elseif ($argv[1] == 'install') {
+    do_install();
+
 } elseif ($argv[1] == 'add') {
     if ($argc != 4) {
-        do_error('etchosts add expects exactly two parameters.'."\n\n".'       etchosts add <host> <ip>'."\n");
+        do_error('etchosts add expects exactly two parameters.'.PHP_EOL.PHP_EOL.'       etchosts add <host> <ip>'.PHP_EOL);
     }
     $host = $argv[2];
     $ip = $argv[3];
@@ -22,7 +31,7 @@ if ($argc == 1) {
 
 } elseif ($argv[1] == 'rm' || $argv[1] == 'remove') {
     if ($argc != 3) {
-        do_error('etchosts rm expects exactly one parameter.'."\n\n".'       etchosts [rm|remove] <host>'."\n");
+        do_error('etchosts rm expects exactly one parameter.'.PHP_EOL.PHP_EOL.'       etchosts [rm|remove] <host>'.PHP_EOL);
     }
     $host = $argv[2];
     if (!validateHost($host)) {
@@ -38,25 +47,26 @@ exit(0);
 
 function do_help()
 {
-    echo sprintf("Usage: etchosts -- lists current hosts\n");
-    echo sprintf("       etchosts [help|-h] -- shows this help\n");
-    echo sprintf("       etchosts add <host> <ip> -- adds the host with the associated ip\n");
-    echo sprintf("       etchosts [rm|remove] <host> -- removes the host\n");
+    echo sprintf('Usage: etchosts -- shows command list'.PHP_EOL);
+    echo sprintf('       etchosts install -- installs etchosts command globally'.PHP_EOL);
+    echo sprintf('       etchosts list -- shows hosts list'.PHP_EOL);
+    echo sprintf('       etchosts add <host> <ip> -- adds the host with the associated ip'.PHP_EOL);
+    echo sprintf('       etchosts [rm|remove] <host> -- removes the host'.PHP_EOL);
 }
 
 
 function do_list()
 {
-    $data = file_get_contents('/etc/hosts');
+    $data = file_get_contents(ETC_HOSTS);
     $lines = explode("\n", $data);
 
     $i = 1;
     foreach ($lines as $line) {
         echo sprintf("\033[37m %02d. \033[0m", $i);
         if (substr($line, 0, 1) != '#') {
-            echo sprintf("%s\n", $line);
+            echo sprintf('%s'.PHP_EOL, $line);
         } else {
-            echo sprintf("\033[37m%s\033[0m\n", $line);
+            echo sprintf("\033[37m%s\033[0m".PHP_EOL, $line);
         }
         $i++;
     }
@@ -64,7 +74,7 @@ function do_list()
 
 function do_error($msg)
 {
-    echo 'Error: '.$msg."\n";
+    echo 'Error: '.$msg.PHP_EOL;
     exit(1);
 }
 
@@ -116,7 +126,7 @@ function do_add($host, $ip)
 }
 
 function parse() {
-    $data = file_get_contents('/etc/hosts');
+    $data = file_get_contents(ETC_HOSTS);
     $lines = explode("\n", $data);
 
     $ret = [];
@@ -147,8 +157,8 @@ function parse() {
 
 function save($data)
 {
-    if (!is_writable('/etc/hosts')) {
-        do_error('file /etc/hosts is not writable. Maybe you should run etchosts with sudo.');
+    if (!is_writable(ETC_HOSTS)) {
+        do_error('file '.ETC_HOSTS.' is not writable. Maybe you should run etchosts with sudo.');
     }
 
     $content = [];
@@ -157,9 +167,7 @@ function save($data)
     }
     $content = implode("\n", $content)."\n";
 
-    print_r($content);
-
-    file_put_contents('/etc/hosts', $content);
+    file_put_contents(ETC_HOSTS, $content);
 }
 
 function regex($host)
@@ -181,4 +189,13 @@ function validateIp($ip)
 function validateHost($host)
 {
     return preg_match('#^([a-zA-Z0-9_-]+)([.]([a-zA-Z0-9_-]+))*[.]?$#', $host) != 0;
+}
+
+function do_install()
+{
+    if (!is_writable('/usr/sbin/')) {
+        do_error('directory /usr/sbin in not writable. Maybe you should run etchosts with sudo.');
+    }
+    exec('cp '.__FILE__.' /usr/sbin/etchosts');
+    echo 'etchosts was copied to /usr/sbin'.PHP_EOL;
 }
