@@ -34,7 +34,7 @@ if ($argc == 1) {
         do_error('etchosts rm expects exactly one parameter.'.PHP_EOL.PHP_EOL.'       etchosts [rm|remove] <host>'.PHP_EOL);
     }
     $host = $argv[2];
-    if (!validateHost($host)) {
+    if (!validateHost($host, true)) {
         do_error('Host is not valid.');
     }
     do_remove($host);
@@ -165,7 +165,7 @@ function save($data)
     foreach ($data as $d) {
         $content[] = $d['original'];
     }
-    $content = implode("\n", $content)."\n";
+    $content = implode("\n", $content);
 
     file_put_contents(ETC_HOSTS, $content);
 }
@@ -186,9 +186,13 @@ function validateIp($ip)
     return ! (filter_var($ip, FILTER_VALIDATE_IP) === false);
 }
 
-function validateHost($host)
+function validateHost($host, $includeRegex = false)
 {
-    return preg_match('#^([a-zA-Z0-9_-]+)([.]([a-zA-Z0-9_-]+))*[.]?$#', $host) != 0;
+    if ($includeRegex) {
+        return preg_match('#^([a-zA-Z0-9_*-]+)([.]([a-zA-Z0-9_*-]+))*[.]?$#', $host) != 0;
+    } else {
+        return preg_match('#^([a-zA-Z0-9_-]+)([.]([a-zA-Z0-9_-]+))*[.]?$#', $host) != 0;
+    }
 }
 
 function do_install()
