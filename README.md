@@ -12,6 +12,7 @@ You will need the have PHP on your system to run this tool.
 To install `etchosts` on your system, copy the command below and run it on your CLI.
 ```sh
 php -r "copy('https://raw.githubusercontent.com/raulneis/etchosts/master/etchosts-installer', './etchosts-installer');"
+chmod +x ./etchosts-installer
 sudo ./etchosts-installer
 ```
 This will download the latest version of the installer and install the command. We run the installer with sudo because it is needed to copy file into /usr/sbin.
