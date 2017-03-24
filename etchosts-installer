@@ -14,7 +14,7 @@ function do_self_install()
         do_error('directory /usr/sbin in not writable. Maybe you should run the installation with sudo.');
     }
     copy('https://raw.githubusercontent.com/raulneis/etchosts/master/etchosts', '/usr/sbin/etchosts');
-
+    exec('chmod a+x /usr/sbin/etchosts');
     unlink(__FILE__);
 
     echo 'etchosts was installed correctly.'.PHP_EOL;
