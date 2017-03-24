@@ -8,9 +8,15 @@ You can always use a text editor like vim or nano to edit your hosts, but isn't 
 ## Requirements
 You will need the have PHP on your system to run this tool.
 
-## Instalation
-To install `etchosts` just clone this repo wherever you want and run the file `etchosts`.
-Another options it to just download the file `etchosts` from this repo and run the file.
+## Installation
+To install `etchosts` on your system, copy the command below and run it on your CLI.
+```sh
+php -r "copy('https://raw.githubusercontent.com/raulneis/etchosts/master/etchosts-installer', 'etchosts-installer');" && sudo ./etchosts-installer
+```
+This will download the latest version of the installer and install the command. We run the installer with sudo because it is needed to copy file into /usr/sbin.
+
+### Alternative installation
+Another option is to just download the file `etchosts` from this repository and run the file. This options let's you control where the script will be saved, but does not make the command globally available.
 The file should be executable, so maybe you have to run `chmod +x etchosts` before you can run it.
 
 ### Global access

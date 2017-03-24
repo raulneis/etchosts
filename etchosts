@@ -1,19 +1,16 @@
 #!/usr/bin/env php
 <?php
-
+define ('VERSION', '0.1');
 define ('ETC_HOSTS', '/etc/hosts');
 
 if ($argc == 1) {
-    do_help();
+    do_list();
 
 } elseif ($argv[1] == 'help' || $argv[1] == '-h') {
     do_help();
 
 } elseif ($argv[1] == 'list') {
     do_list();
-
-} elseif ($argv[1] == 'install') {
-    do_install();
 
 } elseif ($argv[1] == 'add') {
     if ($argc != 4) {
@@ -47,16 +44,31 @@ exit(0);
 
 function do_help()
 {
-    echo sprintf('Usage: etchosts -- shows command list'.PHP_EOL);
-    echo sprintf('       etchosts install -- installs etchosts command globally'.PHP_EOL);
-    echo sprintf('       etchosts list -- shows hosts list'.PHP_EOL);
-    echo sprintf('       etchosts add <host> <ip> -- adds the host with the associated ip'.PHP_EOL);
+    echo sprintf('etchosts '.VERSION.' -- A tool for programatically manage the /etc/hosts file'.PHP_EOL.PHP_EOL);
+    echo sprintf('Usage: etchosts                    -- shows hosts list'.PHP_EOL);
+    echo sprintf('       etchosts list               -- shows hosts list'.PHP_EOL);
+    echo sprintf('       etchosts [help|-h]          -- shows this help'.PHP_EOL);
+    echo sprintf('       etchosts add <host> <ip>    -- adds the host with the associated ip'.PHP_EOL);
     echo sprintf('       etchosts [rm|remove] <host> -- removes the host'.PHP_EOL);
 }
 
 
 function do_list()
 {
+    $data = parse();
+
+    $max = 0;
+    foreach ($data as $line) {
+        $max = max($max, strlen($line['host']));
+    }
+    
+    foreach ($data as $line) {
+        if ($line['host']) {
+            echo sprintf("\033[37m %02d. \033[0m", $line['line']);
+            echo sprintf("\033[27m%".$max."s\033[0m => \033[27m%s\033[0m".PHP_EOL, $line['host'], $line['ip']);
+        }
+    }
+    exit();
     $data = file_get_contents(ETC_HOSTS);
     $lines = explode("\n", $data);
 
@@ -193,14 +205,4 @@ function validateHost($host, $includeRegex = false)
     } else {
         return preg_match('#^([a-zA-Z0-9_-]+)([.]([a-zA-Z0-9_-]+))*[.]?$#', $host) != 0;
     }
-}
-
-function do_install()
-{
-    if (!is_writable('/usr/sbin/')) {
-        do_error('directory /usr/sbin in not writable. Maybe you should run etchosts with sudo.');
-    }
-    exec('cp '.__FILE__.' /usr/sbin/etchosts');
-    echo 'etchosts was copied to /usr/sbin'.PHP_EOL;
-    echo 'You can now delete the git repository form your computer if  you cloned it'.PHP_EOL;
 }
