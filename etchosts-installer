@@ -13,7 +13,7 @@ function do_self_install()
     if (!is_writable('/usr/sbin/')) {
         do_error('directory /usr/sbin in not writable. Maybe you should run the installation with sudo.');
     }
-    copy('https://github.com/raulneis/etchosts/blob/master/etchosts', '/usr/sbin/etchosts');
+    copy('https://raw.githubusercontent.com/raulneis/etchosts/master/etchosts', '/usr/sbin/etchosts');
 
     unlink(__FILE__);
 
