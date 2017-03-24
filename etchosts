@@ -198,4 +198,5 @@ function do_install()
     }
     exec('cp '.__FILE__.' /usr/sbin/etchosts');
     echo 'etchosts was copied to /usr/sbin'.PHP_EOL;
+    echo 'You can now delete the git repository form your computer if  you cloned it'.PHP_EOL;
 }
