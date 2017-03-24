@@ -1,5 +1,7 @@
 # etchosts - Manage your /etc/hosts file
 
+> **Note** that this is an alpha version, and **is not** production ready. Please backup your `/etc/hosts` file before using `etchosts`.
+
 `etchosts` is a CLI tool for programatically managing the entries in the `/etc/hosts` file. It let's you _list_, _add_ and _remove_ hosts.
 You can always use a text editor like vim or nano to edit your hosts, but isn't it cool to have a command for that?
 
